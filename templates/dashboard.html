@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="hero">
+  <div>
+    <p class="eyebrow">Dashboard</p>
+    <h1>Hello, {{ session.get('user_name') }}</h1>
+    <p class="muted">Manage vehicles, maintenance records, costs, and upcoming service reminders from one place.</p>
+  </div>
+</header>
+
+<section class="stats-grid stats-grid-six">
+  <div class="stat-card"><span>Total Vehicles</span><strong>{{ vehicles|length }}</strong></div>
+  <div class="stat-card"><span>Total Mileage</span><strong>{{ "{:,}".format(total_mileage) }}</strong></div>
+  <div class="stat-card"><span>Maintenance Records</span><strong>{{ total_records }}</strong></div>
+  <div class="stat-card"><span>Total Maintenance Cost</span><strong>${{ "{:,.2f}".format(total_maintenance) }}</strong></div>
+  <div class="stat-card"><span>{{ current_year }} Maintenance Cost</span><strong>${{ "{:,.2f}".format(yearly_cost) }}</strong></div>
+  <div class="stat-card"><span>Due / Upcoming</span><strong>{{ due_count }} / {{ upcoming_count }}</strong></div>
+</section>
+
+<section class="panel reminder-dashboard">
+  <div class="panel-head">
+    <div>
+      <h2>Upcoming Maintenance</h2>
+      <p class="muted">Due items are shown first so important service is easy to spot.</p>
+    </div>
+    <span class="reminder-count">{{ reminders|length }} reminder{% if reminders|length != 1 %}s{% endif %}</span>
+  </div>
+  {% if reminders %}
+    <div class="reminder-grid">
+      {% for reminder in reminders[:6] %}
+        <article class="reminder-card">
+          <div class="reminder-topline">
+            <div>
+              <h3>{{ reminder.service_type }}</h3>
+              <p>{{ reminder.year }} {{ reminder.make }} {{ reminder.model }}</p>
+            </div>
+            <span class="status-badge {{ 'due' if reminder.status == 'Due' else 'upcoming' }}">{{ reminder.status }}</span>
+          </div>
+          {% if reminder.due_date %}<p><strong>Due date:</strong> {{ reminder.due_date }}</p>{% endif %}
+          {% if reminder.due_mileage is not none %}<p><strong>Due mileage:</strong> {{ "{:,}".format(reminder.due_mileage) }} miles</p>{% endif %}
+          <a href="{{ url_for('vehicle_detail', vehicle_id=reminder.vehicle_id) }}">Open vehicle</a>
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty">No reminders yet. Open a vehicle and create your first maintenance reminder.</div>
+  {% endif %}
+</section>
+
+<section class="layout-grid">
+  <form method="post" action="{{ url_for('add_vehicle') }}" class="panel">
+    <h2>Add Vehicle</h2>
+    <p class="muted">Create a vehicle record, then add maintenance history and reminders.</p>
+    <label>Make
+      <input type="text" name="make" placeholder="Toyota" required>
+    </label>
+    <label>Model
+      <input type="text" name="model" placeholder="Camry" required>
+    </label>
+    <div class="two-col">
+      <label>Year
+        <input type="number" name="year" placeholder="2020" min="1950" max="2035" required>
+      </label>
+      <label>Mileage
+        <input type="number" name="mileage" placeholder="65000" min="0" required>
+      </label>
+    </div>
+    <label>Notes
+      <textarea name="notes" placeholder="Example: daily driver, next oil change soon"></textarea>
+    </label>
+    <button type="submit">Add Vehicle</button>
+  </form>
+
+  <section class="panel">
+    <div class="panel-head">
+      <div>
+        <h2>My Vehicles</h2>
+        <p class="muted">Open maintenance history or edit vehicle details.</p>
+      </div>
+      <button type="button" class="secondary" id="refreshBtn">Refresh API</button>
+    </div>
+    <div id="vehicleList" class="vehicle-list">
+      {% if vehicles %}
+        {% for vehicle in vehicles %}
+          <article class="vehicle-card">
+            <div class="vehicle-card-head">
+              <div>
+                <h3>{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</h3>
+                <p><strong>Mileage:</strong> {{ "{:,}".format(vehicle.mileage) }} miles</p>
+                <p><strong>Maintenance records:</strong> {{ vehicle.maintenance_count }}</p>
+                <p><strong>Maintenance cost:</strong> ${{ "{:,.2f}".format(vehicle.maintenance_cost) }}</p>
+                {% if vehicle.notes %}<p><strong>Notes:</strong> {{ vehicle.notes }}</p>{% endif %}
+              </div>
+              <div class="vehicle-actions">
+                <a class="button-link" href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}">Maintenance</a>
+                <a class="button-link secondary-link" href="{{ url_for('edit_vehicle', vehicle_id=vehicle.id) }}">Edit</a>
+                <form method="post" action="{{ url_for('delete_vehicle', vehicle_id=vehicle.id) }}" onsubmit="return confirm('Delete this vehicle and all of its maintenance records and reminders?');">
+                  <button class="danger-button small-action" type="submit">Delete</button>
+                </form>
+              </div>
+            </div>
+          </article>
+        {% endfor %}
+      {% else %}
+        <div class="empty">No vehicles added yet. Use the form to create the first record.</div>
+      {% endif %}
+    </div>
+  </section>
+</section>
+{% endblock %}

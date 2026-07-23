@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="hero compact-hero">
+  <div>
+    <p class="eyebrow">Vehicle Settings</p>
+    <h1>Edit {{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</h1>
+    <p class="muted">Update vehicle information and current mileage.</p>
+  </div>
+  <a class="button-link secondary-link" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</header>
+
+<div class="single-form-wrap">
+  <form method="post" class="panel edit-panel">
+    <h2>Edit Vehicle</h2>
+    <label>Make
+      <input type="text" name="make" value="{{ vehicle.make }}" required>
+    </label>
+    <label>Model
+      <input type="text" name="model" value="{{ vehicle.model }}" required>
+    </label>
+    <div class="two-col">
+      <label>Year
+        <input type="number" name="year" value="{{ vehicle.year }}" min="1950" max="2035" required>
+      </label>
+      <label>Mileage
+        <input type="number" name="mileage" value="{{ vehicle.mileage }}" min="0" required>
+      </label>
+    </div>
+    <label>Notes
+      <textarea name="notes">{{ vehicle.notes or '' }}</textarea>
+    </label>
+    <button type="submit">Save Vehicle Changes</button>
+  </form>
+</div>
+{% endblock %}

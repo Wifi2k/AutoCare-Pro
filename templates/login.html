@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-card">
+  <div>
+    <p class="eyebrow">Vehicle Maintenance Tracker</p>
+    <h1>Welcome back</h1>
+    <p class="muted">Log in to manage vehicles, maintenance history, and upcoming service reminders.</p>
+  </div>
+  <form method="post" class="form-card">
+    <label>Email
+      <input type="email" name="email" placeholder="wafi@example.com" required>
+    </label>
+    <label>Password
+      <input type="password" name="password" placeholder="Enter password" required>
+    </label>
+    <button type="submit">Log In</button>
+    <p class="small">Need an account? <a href="{{ url_for('register') }}">Create one</a></p>
+  </form>
+</section>
+{% endblock %}

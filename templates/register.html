@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-card">
+  <div>
+    <p class="eyebrow">AutoCare Pro</p>
+    <h1>Create your account</h1>
+    <p class="muted">This creates a secure user account using password hashing and stores your vehicle records under your profile.</p>
+  </div>
+  <form method="post" class="form-card">
+    <label>Name
+      <input type="text" name="name" placeholder="Khalil Sobeh" required>
+    </label>
+    <label>Email
+      <input type="email" name="email" placeholder="khalil@example.com" required>
+    </label>
+    <label>Password
+      <input type="password" name="password" placeholder="Create password" required>
+    </label>
+    <button type="submit">Register</button>
+    <p class="small">Already registered? <a href="{{ url_for('login') }}">Log in</a></p>
+  </form>
+</section>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="hero compact-hero">
+  <div>
+    <p class="eyebrow">Maintenance</p>
+    <h1>{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</h1>
+    <p class="muted">Current mileage: {{ "{:,}".format(vehicle.mileage) }} miles</p>
+  </div>
+  <a class="button-link secondary-link" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+</header>
+
+<section class="stats-grid maintenance-stats">
+  <div class="stat-card"><span>Maintenance Records</span><strong>{{ total_records }}</strong></div>
+  <div class="stat-card"><span>Total Maintenance Cost</span><strong>${{ "{:,.2f}".format(total_cost) }}</strong></div>
+  <div class="stat-card"><span>Current Mileage</span><strong>{{ "{:,}".format(vehicle.mileage) }}</strong></div>
+</section>
+
+<section class="reminder-layout">
+  <form method="post" action="{{ url_for('add_reminder', vehicle_id=vehicle.id) }}" class="panel">
+    <h2>Add Maintenance Reminder</h2>
+    <p class="muted">Set a reminder by date, mileage, or both.</p>
+    <label>Service Type
+      <select name="service_type" required>
+        <option value="">Select service</option>
+        <option>Oil Change</option>
+        <option>Tire Rotation</option>
+        <option>Brake Service</option>
+        <option>Battery Replacement</option>
+        <option>Inspection</option>
+        <option>Registration Renewal</option>
+        <option>Other</option>
+      </select>
+    </label>
+    <div class="two-col">
+      <label>Due Date
+        <input type="date" name="due_date">
+      </label>
+      <label>Due Mileage
+        <input type="number" name="due_mileage" min="0" placeholder="90000">
+      </label>
+    </div>
+    <label>Notes
+      <textarea name="notes" placeholder="Example: next oil change"></textarea>
+    </label>
+    <button type="submit">Save Reminder</button>
+  </form>
+
+  <section class="panel">
+    <h2>Maintenance Reminders</h2>
+    <p class="muted">Due and upcoming service reminders for this vehicle.</p>
+    {% if reminders %}
+      <div class="record-list">
+        {% for reminder in reminders %}
+          <article class="record-card">
+            <div class="reminder-topline">
+              <h3>{{ reminder.service_type }}</h3>
+              <span class="status-badge {{ 'due' if reminder.status == 'Due' else 'upcoming' }}">{{ reminder.status }}</span>
+            </div>
+            {% if reminder.due_date %}<p><strong>Due date:</strong> {{ reminder.due_date }}</p>{% endif %}
+            {% if reminder.due_mileage is not none %}<p><strong>Due mileage:</strong> {{ "{:,}".format(reminder.due_mileage) }} miles</p>{% endif %}
+            {% if reminder.notes %}<p><strong>Notes:</strong> {{ reminder.notes }}</p>{% endif %}
+            <form method="post" action="{{ url_for('delete_reminder', reminder_id=reminder.id) }}" onsubmit="return confirm('Delete this reminder?');">
+              <button class="danger-button small-action" type="submit">Delete Reminder</button>
+            </form>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No reminders yet. Use the form to create one.</div>
+    {% endif %}
+  </section>
+</section>
+
+<section class="layout-grid">
+  <form method="post" action="{{ url_for('add_maintenance', vehicle_id=vehicle.id) }}" class="panel">
+    <h2>Add Maintenance Record</h2>
+    <p class="muted">Save completed service information for this vehicle.</p>
+
+    <label>Service Type
+      <select name="service_type" required>
+        <option value="">Select service</option>
+        <option>Oil Change</option>
+        <option>Tire Rotation</option>
+        <option>Brake Service</option>
+        <option>Battery Replacement</option>
+        <option>Inspection</option>
+        <option>Other</option>
+      </select>
+    </label>
+
+    <label>Service Date
+      <input type="date" name="service_date" required>
+    </label>
+
+    <div class="two-col">
+      <label>Mileage
+        <input type="number" name="mileage" min="0" value="{{ vehicle.mileage }}" required>
+      </label>
+      <label>Cost ($)
+        <input type="number" name="cost" min="0" step="0.01" placeholder="120.00">
+      </label>
+    </div>
+
+    <label>Notes
+      <textarea name="notes" placeholder="Example: oil and filter replaced"></textarea>
+    </label>
+
+    <button type="submit">Save Maintenance Record</button>
+  </form>
+
+  <section class="panel">
+    <h2>Maintenance History</h2>
+    <p class="muted">Search or filter completed maintenance records.</p>
+
+    <form method="get" class="filter-form">
+      <div class="filter-grid">
+        <label>Service Type
+          <select name="service_type">
+            <option value="">All Services</option>
+            {% for service in ['Oil Change','Tire Rotation','Brake Service','Battery Replacement','Inspection','Other'] %}
+              <option value="{{ service }}" {% if service_filter == service %}selected{% endif %}>{{ service }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        <label>From Date
+          <input type="date" name="date_from" value="{{ date_from }}">
+        </label>
+        <label>To Date
+          <input type="date" name="date_to" value="{{ date_to }}">
+        </label>
+      </div>
+      <div class="filter-actions">
+        <button type="submit" class="small-action">Apply Filters</button>
+        <a class="button-link secondary-link small-action" href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}">Clear</a>
+      </div>
+    </form>
+
+    {% if records %}
+      <div class="record-list">
+        {% for record in records %}
+          <article class="record-card">
+            <div class="record-topline">
+              <h3>{{ record.service_type }}</h3>
+              <strong>${{ "{:,.2f}".format(record.cost) }}</strong>
+            </div>
+            <p><strong>Date:</strong> {{ record.service_date }}</p>
+            <p><strong>Mileage:</strong> {{ "{:,}".format(record.mileage) }} miles</p>
+            {% if record.notes %}<p><strong>Notes:</strong> {{ record.notes }}</p>{% endif %}
+            <div class="record-actions">
+              <a class="button-link small-action" href="{{ url_for('edit_maintenance', record_id=record.id) }}">Edit</a>
+              <form method="post" action="{{ url_for('delete_maintenance', record_id=record.id) }}" onsubmit="return confirm('Delete this maintenance record?');">
+                <button class="danger-button small-action" type="submit">Delete</button>
+              </form>
+            </div>
+          </article>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="empty">No maintenance records match the selected filters.</div>
+    {% endif %}
+  </section>
+</section>
+{% endblock %}

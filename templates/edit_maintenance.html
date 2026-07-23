@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block content %}
+<header class="hero compact-hero">
+  <div>
+    <p class="eyebrow">Edit Maintenance</p>
+    <h1>{{ vehicle.year }} {{ vehicle.make }} {{ vehicle.model }}</h1>
+    <p class="muted">Update this saved maintenance record.</p>
+  </div>
+  <a class="button-link secondary-link" href="{{ url_for('vehicle_detail', vehicle_id=vehicle.id) }}">Back to Maintenance</a>
+</header>
+
+<section class="single-form-wrap">
+  <form method="post" class="panel edit-panel">
+    <h2>Edit Maintenance Record</h2>
+
+    <label>Service Type
+      <select name="service_type" required>
+        {% for option in ['Oil Change','Tire Rotation','Brake Service','Battery Replacement','Inspection','Other'] %}
+          <option value="{{ option }}" {% if record.service_type == option %}selected{% endif %}>{{ option }}</option>
+        {% endfor %}
+      </select>
+    </label>
+
+    <label>Service Date
+      <input type="date" name="service_date" value="{{ record.service_date }}" required>
+    </label>
+
+    <div class="two-col">
+      <label>Mileage
+        <input type="number" name="mileage" min="0" value="{{ record.mileage }}" required>
+      </label>
+      <label>Cost ($)
+        <input type="number" name="cost" min="0" step="0.01" value="{{ '%.2f'|format(record.cost) }}">
+      </label>
+    </div>
+
+    <label>Notes
+      <textarea name="notes">{{ record.notes or '' }}</textarea>
+    </label>
+
+    <button type="submit">Save Changes</button>
+  </form>
+</section>
+{% endblock %}
