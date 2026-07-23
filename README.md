@@ -66,8 +66,8 @@ Relationships:
 If using Git:
 
 ```bash
-git clone <YOUR-REPOSITORY-URL>
-cd final_autocare_project_COMPLETE
+git clone https://github.com/Wifi2k/AutoCare-Pro.git
+cd AutoCare-Pro
 ```
 
 Or download the ZIP and extract it.
